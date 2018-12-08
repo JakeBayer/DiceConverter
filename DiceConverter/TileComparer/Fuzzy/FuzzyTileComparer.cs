@@ -19,12 +19,12 @@ namespace DiceConverter.TileComparer
             _maxDistance = maxDistance;
         }
 
-        public double GetTileDifference(Bitmap t1, Bitmap t2)
+        public double GetTileDifference(Tile t1, Tile t2)
         {
             return GetTileDifference(t1, t2, _euclidean, new EuclideanColorComparer());
         }
 
-        public double GetTileDifference<TDistanceMetric, TColorMetric>(Bitmap t1, Bitmap t2, TDistanceMetric distanceMetric, TColorMetric colorMetric)
+        public double GetTileDifference<TDistanceMetric, TColorMetric>(Tile t1, Tile t2, TDistanceMetric distanceMetric, TColorMetric colorMetric)
             where TDistanceMetric : IDistanceMetric<int>
             where TColorMetric : IDistanceMetric<Color>
         {
@@ -40,7 +40,7 @@ namespace DiceConverter.TileComparer
             return totalDistance;
         }
 
-        private double GetDifferenceAtPixel(int x, int y, Bitmap t1, Bitmap t2, int maxDistance, IDistanceMetric<int> distanceMetric, IDistanceMetric<Color> colorMetric)
+        private double GetDifferenceAtPixel(int x, int y, Tile t1, Tile t2, int maxDistance, IDistanceMetric<int> distanceMetric, IDistanceMetric<Color> colorMetric)
         {
             var max_x = t1.Width;
             var max_y = t1.Height;

@@ -12,6 +12,7 @@ namespace DiceConverter.ColorComparer
     {
         public double Distance(Color a, Color b)
         {
+            
             var r = (a.R + b.R) / 2;
             var dR = (a.R - b.R);
             var dG = (a.G - b.G);

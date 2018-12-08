@@ -4,12 +4,16 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Media.Imaging;
 using DiceConverter.ColorComparer;
 using DiceConverter.Distance;
+using DiceConverter.Extensions;
+using DiceConverter.PreProcess;
 using DiceConverter.TileComparer;
 
 namespace DiceConverter
@@ -23,63 +27,40 @@ namespace DiceConverter
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            string imagePath = @"C:\git\DiceConverter\image4.jpg";
+            string imagePath = @"C:\git\DiceConverter\image9.jpg";
 
             var bmp = new Bitmap(imagePath);
 
-            var img = MakeMultipleOfN(bmp, 7);
+            var img = ImagePreProcessor.MakeMultipleOfN(bmp, 7);
 
             pictureBox1.Image = img;
 
-            var greybmp = MakeGreyscale(img);
+            var greybmp = ImagePreProcessor.MakeGreyscale(img);
 
             greybmp.Save(@"C:\git\DiceConverter\image4_grey.jpg");
 
             pictureBox2.Image = greybmp;
 
-            var tiler = new ImageTiler(new TaxiMetric(), new EuclideanColorComparer());
-            pictureBox3.Image = tiler.Tile(greybmp, Constants.DiceTiles.Tiles, new FuzzyTileComparer(1));
-        }
 
-        public Bitmap MakeMultipleOfN(Bitmap original, int n)
-        {
-            
-            int newWidth  = original.Width  - (original.Width  % n),
-                newHeight = original.Height - (original.Height % n);
-            return original.Clone(new Rectangle(0, 0, newWidth, newHeight), original.PixelFormat);
-        }
+            //var pointifiedImage = ImagePreProcessor.Pointify(greybmp);
+            //pointifiedImage.Save(@"C:\git\DiceConverter\image4_adj_grey_pointified.jpg");
 
-        public static Bitmap MakeGreyscale(Bitmap original)
-        {
-            //create a blank bitmap the same size as original
-            Bitmap newBitmap = new Bitmap(original.Width, original.Height);
+            var imageAvgColor = ImagePreProcessor.CaluclateAverageColor(greybmp);
 
-            //get a graphics object from the new image
-            using (Graphics g = Graphics.FromImage(newBitmap))
-            {
-                //create the grayscale ColorMatrix
-                ColorMatrix colorMatrix = new ColorMatrix(
-                    new float[][]
-                    {
-                        new float[] { .3f, .3f, .3f, 0, 0 },
-                        new float[] { .59f, .59f, .59f, 0, 0 },
-                        new float[] { .11f, .11f, .11f, 0, 0 },
-                        new float[] { 0, 0, 0, 1, 0 },
-                        new float[] { 0, 0, 0, 0, 1 }
-                    });
+            var adjustedGrey = ImagePreProcessor.AdjustBrightness(greybmp, 280 - imageAvgColor.R);
 
-                //create some image attributes
-                ImageAttributes attributes = new ImageAttributes();
+            adjustedGrey.Save(@"C:\git\DiceConverter\image4_adj_grey.jpg");
 
-                //set the color matrix attribute
-                attributes.SetColorMatrix(colorMatrix);
+            var tiler = new ImageTiler(new EuclideanMetric(), new EuclideanColorComparer());
 
-                //draw the original image on the new image
-                //using the greyscale color matrix
-                g.DrawImage(original, new Rectangle(0, 0, original.Width, original.Height),
-                    0, 0, original.Width, original.Height, GraphicsUnit.Pixel, attributes);
-            }
-            return newBitmap;
+            var diceTiles = Constants.DiceTiles.Tiles.Select(BitmapFactory.FromColorArray);
+
+            var diveAvg = diceTiles.Select(ImagePreProcessor.CaluclateAverageColor).ToList();
+
+            var dice = tiler.Tile(adjustedGrey, diceTiles, new SlidingTileComparer(3));
+            pictureBox3.Image = dice;
+
+            dice.Save(@"C:\git\DiceConverter\image4_dice.jpg");
         }
     }
 }

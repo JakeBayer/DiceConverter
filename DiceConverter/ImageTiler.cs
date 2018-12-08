@@ -21,13 +21,13 @@ namespace DiceConverter
             _distanceMetric = distanceMetric;
         }
 
-        public Bitmap Tile<TTileComparer>(Bitmap original, IEnumerable<Tile> tiles, TTileComparer comparer)
+        public Bitmap Tile<TTileComparer>(Bitmap original, IEnumerable<Bitmap> tileImages, TTileComparer comparer)
             where TTileComparer : ITileComparer
         {
-            var tilesAsBmp = tiles.Select(t => BitmapFactory.FromColorArray(t.Pixels)).ToList();
+            var tiles = tileImages.Select(t => new Tile(t)).ToList();
 
             Bitmap newBitmap = new Bitmap(original.Width, original.Height);
-            var tileSize = tiles.First().Pixels.GetLength(0);
+            var tileSize = tiles.First().Width;
             var imageWidth = original.Width;
             var imageHeight = original.Height;
 
@@ -37,11 +37,11 @@ namespace DiceConverter
                 {
                     for (int j = 0; j < imageHeight; j += tileSize)
                     {
-                        var tile = original.Clone(new Rectangle(i, j, tileSize, tileSize), original.PixelFormat);
+                        var tile = new Tile(original.Clone(new Rectangle(i, j, tileSize, tileSize), original.PixelFormat));
                         //var scored = tilesAsBmp.Select(t => comparer.GetTileDifference(tile, t)).ToArray();
-                        var closest = tilesAsBmp.OrderBy(t => comparer.GetTileDifference(tile, t, _distanceMetric, _colorDistanceMetric)).First();
+                        var closest = tiles.OrderBy(t => comparer.GetTileDifference(tile, t, _distanceMetric, _colorDistanceMetric)).First();
 
-                        g.DrawImage(closest, new Rectangle(i, j, tileSize, tileSize));
+                        g.DrawImage(closest.Image, new Rectangle(i, j, tileSize, tileSize));
                     }
                 }
             }
