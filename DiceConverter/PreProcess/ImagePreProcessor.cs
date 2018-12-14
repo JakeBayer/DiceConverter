@@ -44,17 +44,18 @@ namespace DiceConverter.PreProcess
 
             float FinalValue = (float)value / 255.0f;
 
-            float[][] FloatColorMatrix ={
+            float[][] FloatColorMatrix =
+            {
 
-                new float[] {1, 0, 0, 0, 0},
+                new float[] { 1, 0, 0, 0, 0 },
 
-                new float[] {0, 1, 0, 0, 0},
+                new float[] { 0, 1, 0, 0, 0 },
 
-                new float[] {0, 0, 1, 0, 0},
+                new float[] { 0, 0, 1, 0, 0 },
 
-                new float[] {0, 0, 0, 1, 0},
+                new float[] { 0, 0, 0, 1, 0 },
 
-                new float[] {FinalValue, FinalValue, FinalValue, 0, 1}
+                new float[] { FinalValue, FinalValue, FinalValue, 1, 1 }
             };
 
             ColorMatrix NewColorMatrix = new ColorMatrix(FloatColorMatrix);
